@@ -1,45 +1,56 @@
-import React, {Component} from 'react';
-import {Keyboard, ActivityIndicator, AppState} from 'react-native';
+import React, { Component } from 'react';
+import { Keyboard, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import PropTypes from 'prop-types';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import api from '../../services/api';
 
-import { Container, Form, Input, SubmitButton, List, User, Name, Bio, ProfileButton, Avatar, ProfileButtonText } from './styles';
+import {
+  Container,
+  Form,
+  Input,
+  SubmitButton,
+  List,
+  User,
+  Name,
+  Bio,
+  ProfileButton,
+  Avatar,
+  ProfileButtonText,
+} from './styles';
 
 export default class Main extends Component {
-  state = { 
-    newUser: '', 
+  state = {
+    newUser: '',
     users: [],
     loading: false,
   };
 
   static propTypes = {
     navigation: PropTypes.shape({
-      navigate: PropTypes.func,   
+      navigate: PropTypes.func,
     }).isRequired,
-  }
+  };
 
-  async componentDidMount(){
-
+  async componentDidMount() {
     const users = await AsyncStorage.getItem('users');
-    if(users){
-      this.setState({users: JSON.parse(users)});
+    if (users) {
+      this.setState({ users: JSON.parse(users) });
     }
   }
 
-  componentDidUpdate(_, prevState){
+  componentDidUpdate(_, prevState) {
     const { users } = this.state;
 
-    if(prevState.users !== users){
+    if (prevState.users !== users) {
       AsyncStorage.setItem('users', JSON.stringify(users));
     }
   }
 
   handleAddUser = async () => {
-    const {users, newUser} = this.state;
+    const { users, newUser } = this.state;
 
-    this.setState({loading: true});
+    this.setState({ loading: true });
 
     const response = await api.get(`/users/${newUser}`);
 
@@ -47,27 +58,27 @@ export default class Main extends Component {
       name: response.data.name,
       login: response.data.login,
       bio: response.data.bio,
-      avatar: response.data.avatar_url
+      avatar: response.data.avatar_url,
     };
 
     this.setState({
       users: [...users, data],
       newUser: '',
-      loading: false, 
+      loading: false,
     });
 
     Keyboard.dismiss();
-  }
+  };
 
   handleNavigation = user => {
     console.tron.log(this.props);
     const { navigation } = this.props;
 
-    navigation.navigate('User', {user});
-  }
+    navigation.navigate('User', { user });
+  };
 
-  render(){
-    const  {users, newUser, loading} = this.state;  
+  render() {
+    const { users, newUser, loading } = this.state;
 
     return (
       <Container>
@@ -77,25 +88,25 @@ export default class Main extends Component {
             autoCapitalize="none"
             value={newUser}
             placeholder="Adicionar usuário"
-            onChangeText={text => this.setState({newUser: text})}
+            onChangeText={text => this.setState({ newUser: text })}
             returnKeyType="send"
             onSubmitEditing={this.handleAddUser}
           />
-          <SubmitButton
-            loading={loading}
-            onPress={this.handleAddUser}
-          >
-            {loading ? <ActivityIndicator color="#FFF"  /> :  <Icon name="add" size={20} color="#FFF"/> }
-
+          <SubmitButton loading={loading} onPress={this.handleAddUser}>
+            {loading ? (
+              <ActivityIndicator color="#FFF" />
+            ) : (
+              <Icon name="add" size={20} color="#FFF" />
+            )}
           </SubmitButton>
         </Form>
 
         <List
           data={users}
           keyExtractor={user => user.login}
-          renderItem={({item}) => (
+          renderItem={({ item }) => (
             <User>
-              <Avatar source={{uri: item.avatar}} />
+              <Avatar source={{ uri: item.avatar }} />
               <Name>{item.name}</Name>
               <Bio>{item.bio}</Bio>
 
@@ -108,5 +119,4 @@ export default class Main extends Component {
       </Container>
     );
   }
- 
 }
